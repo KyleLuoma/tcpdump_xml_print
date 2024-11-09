@@ -332,9 +332,12 @@ ip_print(netdissect_options *ndo,
 	ndo->ndo_protocol = "ip";
 	ip = (const struct ip *)bp;
 
+	ND_PRINT("\n<IP_INFO>\n");
+
 	if (!ndo->ndo_eflag) {
+		ND_PRINT("<protocol>");
 		nd_print_protocol_caps(ndo);
-		ND_PRINT(" ");
+		ND_PRINT("</protocol> ");
 	}
 
 	ND_ICHECK_ZU(length, <, sizeof (struct ip));
@@ -375,7 +378,7 @@ ip_print(netdissect_options *ndo,
 
         if (ndo->ndo_vflag) {
             ip_tos = GET_U_1(ip->ip_tos);
-            ND_PRINT("(tos 0x%x", ip_tos);
+            ND_PRINT("<tos> 0x%x", ip_tos);
             /* ECN bits */
             switch (ip_tos & 0x03) {
 
@@ -394,17 +397,17 @@ ip_print(netdissect_options *ndo,
                 ND_PRINT(",CE");
                 break;
             }
-
+			ND_PRINT("</tos>");
             ip_ttl = GET_U_1(ip->ip_ttl);
             if (ip_ttl >= 1)
-                ND_PRINT(", ttl %u", ip_ttl);
+                ND_PRINT(" <ttl>%u</ttl>", ip_ttl);
 
 	    /*
 	     * for the firewall guys, print id, offset.
              * On all but the last stick a "+" in the flags portion.
 	     * For unfragmented datagrams, note the don't fragment flag.
 	     */
-	    ND_PRINT(", id %u, offset %u, flags [%s], proto %s (%u)",
+	    ND_PRINT(" <id>%u</id> <offset>%u</offset> <flags>[%s]</flags> <proto>%s (%u)</proto>",
                          GET_BE_U_2(ip->ip_id),
                          (off & IP_OFFMASK) * 8,
                          bittok2str(ip_frag_values, "none", off & (IP_RES|IP_DF|IP_MF)),
@@ -412,18 +415,18 @@ ip_print(netdissect_options *ndo,
                          ip_proto);
 
 	    if (presumed_tso)
-                ND_PRINT(", length %u [was 0, presumed TSO]", length);
+                ND_PRINT(" <length>%u [was 0, presumed TSO]</length>", length);
 	    else
-                ND_PRINT(", length %u", GET_BE_U_2(ip->ip_len));
+                ND_PRINT(" <length>%u</length>", GET_BE_U_2(ip->ip_len));
 
             if ((hlen > sizeof(struct ip))) {
-                ND_PRINT(", options (");
+                ND_PRINT(" <options> (");
                 if (ip_optprint(ndo, (const u_char *)(ip + 1),
                     hlen - sizeof(struct ip)) == -1) {
                         ND_PRINT(" [truncated-option]");
 			truncated = 1;
                 }
-                ND_PRINT(")");
+                ND_PRINT(")</options>");
             }
 
 	    if (!ndo->ndo_Kflag && (const u_char *)ip + hlen <= ndo->ndo_snapend) {
@@ -432,16 +435,17 @@ ip_print(netdissect_options *ndo,
 	        sum = in_cksum(vec, 1);
 		if (sum != 0) {
 		    ip_sum = GET_BE_U_2(ip->ip_sum);
-		    ND_PRINT(", bad cksum %x (->%x)!", ip_sum,
+		    ND_PRINT(" <bad cksum> %x (->%x)!</bad cksum>", ip_sum,
 			     in_cksum_shouldbe(ip_sum, sum));
 		}
 	    }
 
-	    ND_PRINT(")\n    ");
+	    ND_PRINT("\n    ");
 	    if (truncated) {
-		ND_PRINT("%s > %s: ",
+		ND_PRINT("<source_ip>%s</source_ip> <destination_ip>%s</destination_ip> ",
 			 GET_IPADDR_STRING(ip->ip_src),
 			 GET_IPADDR_STRING(ip->ip_dst));
+		ND_PRINT("\n</IP_INFO>\n");
 		nd_print_trunc(ndo);
 		nd_pop_packet_info(ndo);
 		return;
@@ -458,7 +462,7 @@ ip_print(netdissect_options *ndo,
 
 		if (nh != IPPROTO_TCP && nh != IPPROTO_UDP &&
 		    nh != IPPROTO_SCTP && nh != IPPROTO_DCCP) {
-			ND_PRINT("%s > %s: ",
+			ND_PRINT("<source_ip>%s</source_ip> <destination_ip>%s</destination_ip> ",
 				     GET_IPADDR_STRING(ip->ip_src),
 				     GET_IPADDR_STRING(ip->ip_dst));
 		}
@@ -480,6 +484,7 @@ ip_print(netdissect_options *ndo,
 		 * suppressed.
 		 */
 		if (ndo->ndo_qflag > 1) {
+			ND_PRINT("\n</IP_INFO>\n");
 			nd_pop_packet_info(ndo);
 			return;
 		}
@@ -489,17 +494,19 @@ ip_print(netdissect_options *ndo,
 		 * next level protocol header.  print the ip addr
 		 * and the protocol.
 		 */
-		ND_PRINT("%s > %s:", GET_IPADDR_STRING(ip->ip_src),
+		ND_PRINT("<source_ip>%s</source_ip> <destination_ip>%s</destination_ip> ", GET_IPADDR_STRING(ip->ip_src),
 		          GET_IPADDR_STRING(ip->ip_dst));
 		if (!ndo->ndo_nflag && (p_name = netdb_protoname(ip_proto)) != NULL)
 			ND_PRINT(" %s", p_name);
 		else
 			ND_PRINT(" ip-proto-%u", ip_proto);
 	}
+	ND_PRINT("\n</IP_INFO>\n");
 	nd_pop_packet_info(ndo);
 	return;
 
 trunc:
+	ND_PRINT("\n</IP_INFO>\n");
 	nd_print_trunc(ndo);
 	return;
 

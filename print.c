@@ -321,6 +321,7 @@ pretty_print_packet(netdissect_options *ndo, const struct pcap_pkthdr *h,
 		pretty_print_packet_level = profile_func_level;
 #endif
 
+	ND_PRINT("<PACKET>\n");
 	if (ndo->ndo_packet_number)
 		ND_PRINT("%5u  ", packets_captured);
 
@@ -389,8 +390,9 @@ pretty_print_packet(netdissect_options *ndo, const struct pcap_pkthdr *h,
 	struct timeval tvbuf;
 	tvbuf.tv_sec = h->ts.tv_sec;
 	tvbuf.tv_usec = h->ts.tv_usec;
+	ND_PRINT("<TIMESTAMP>");
 	ts_print(ndo, &tvbuf);
-
+    ND_PRINT("</TIMESTAMP>\n");
 	/*
 	 * Printers must check that they're not walking off the end of
 	 * the packet.
@@ -402,6 +404,7 @@ pretty_print_packet(netdissect_options *ndo, const struct pcap_pkthdr *h,
 
 	ndo->ndo_protocol = "";
 	ndo->ndo_ll_hdr_len = 0;
+	ND_PRINT("<PACKET_INFO>\n");
 	switch (setjmp(ndo->ndo_early_end)) {
 	case 0:
 		/* Print the packet. */
@@ -418,6 +421,7 @@ pretty_print_packet(netdissect_options *ndo, const struct pcap_pkthdr *h,
 #endif
 		break;
 	}
+	ND_PRINT("\n</PACKET_INFO>\n");
 	hdrlen = ndo->ndo_ll_hdr_len;
 
 	/*
@@ -441,6 +445,7 @@ pretty_print_packet(netdissect_options *ndo, const struct pcap_pkthdr *h,
 		/*
 		 * Print the raw packet data in hex and ASCII.
 		 */
+		ND_PRINT("\n<TCP_DUMP_HEX_ASCII>");
 		if (ndo->ndo_Xflag > 1) {
 			/*
 			 * Include the link-layer header.
@@ -456,6 +461,7 @@ pretty_print_packet(netdissect_options *ndo, const struct pcap_pkthdr *h,
 				hex_and_ascii_print(ndo, "\n\t", sp + hdrlen,
 						    h->caplen - hdrlen);
 		}
+		ND_PRINT("\n</TCP_DUMP_HEX_ASCII>");
 	} else if (ndo->ndo_xflag) {
 		/*
 		 * Print the raw packet data in hex.
@@ -500,7 +506,7 @@ pretty_print_packet(netdissect_options *ndo, const struct pcap_pkthdr *h,
 		ND_PRINT("\n</TCP_DUMP_ASCII>\n");
 	}
 
-	ND_PRINT("\n");
+	ND_PRINT("\n</PACKET>\n");
 	nd_free_all(ndo);
 }
 

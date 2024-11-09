@@ -132,7 +132,7 @@ hex_and_ascii_print_with_offset(netdissect_options *ndo, const char *indent,
 		i++;
 		if (i >= HEXDUMP_SHORTS_PER_LINE) {
 			*hsp = *asp = '\0';
-			ND_PRINT("%s0x%04x: %-*s  %s",
+			ND_PRINT("%s<ROW><ADDRESS>0x%04x</ADDRESS> <HEX>%-*s</HEX> <ASCII>%s</ASCII></ROW>",
 			    indent, offset, HEXDUMP_HEXSTUFF_PER_LINE,
 			    hexstuff, asciistuff);
 			i = 0; hsp = hexstuff; asp = asciistuff;
@@ -151,7 +151,7 @@ hex_and_ascii_print_with_offset(netdissect_options *ndo, const char *indent,
 	}
 	if (i > 0) {
 		*hsp = *asp = '\0';
-		ND_PRINT("%s0x%04x: %-*s  %s",
+		ND_PRINT("%s<ROW><ADDRESS>0x%04x</ADDRESS> <HEX>%-*s</HEX> <ASCII>%s</ASCII></ROW>",
 		     indent, offset, HEXDUMP_HEXSTUFF_PER_LINE,
 		     hexstuff, asciistuff);
 	}

@@ -184,13 +184,14 @@ tcp_print(netdissect_options *ndo,
         else
                 ip6 = NULL;
         ch = '\0';
+        ND_PRINT("\n<TCP_INFO>\n");
         if (!ND_TTEST_2(tp->th_dport)) {
                 if (ip6) {
-                        ND_PRINT("%s > %s:",
+                        ND_PRINT("<source_addr>%s</source_addr> <destination_addr>%s</destination_addr>",
                                  GET_IP6ADDR_STRING(ip6->ip6_src),
                                  GET_IP6ADDR_STRING(ip6->ip6_dst));
                 } else {
-                        ND_PRINT("%s > %s:",
+                        ND_PRINT("<source_addr>%s</source_addr> <destination_addr>%s</destination_addr>",
                                  GET_IPADDR_STRING(ip->ip_src),
                                  GET_IPADDR_STRING(ip->ip_dst));
                 }
@@ -202,24 +203,24 @@ tcp_print(netdissect_options *ndo,
 
         if (ip6) {
                 if (GET_U_1(ip6->ip6_nxt) == IPPROTO_TCP) {
-                        ND_PRINT("%s.%s > %s.%s: ",
+                        ND_PRINT("<source_addr>%s.%s</source_addr> <destination_addr>%s.%s</destination_addr>",
                                  GET_IP6ADDR_STRING(ip6->ip6_src),
                                  tcpport_string(ndo, sport),
                                  GET_IP6ADDR_STRING(ip6->ip6_dst),
                                  tcpport_string(ndo, dport));
                 } else {
-                        ND_PRINT("%s > %s: ",
+                        ND_PRINT("<source_addr>%s</source_addr> <destination_addr>%s</destination_addr>",
                                  tcpport_string(ndo, sport), tcpport_string(ndo, dport));
                 }
         } else {
                 if (GET_U_1(ip->ip_p) == IPPROTO_TCP) {
-                        ND_PRINT("%s.%s > %s.%s: ",
+                        ND_PRINT("<source_addr>%s.%s</source_addr> <destination_addr>%s.%s</destination_addr>",
                                  GET_IPADDR_STRING(ip->ip_src),
                                  tcpport_string(ndo, sport),
                                  GET_IPADDR_STRING(ip->ip_dst),
                                  tcpport_string(ndo, dport));
                 } else {
-                        ND_PRINT("%s > %s: ",
+                        ND_PRINT("<source_addr>%s</source_addr> <destination_addr>%s</destination_addr>",
                                  tcpport_string(ndo, sport), tcpport_string(ndo, dport));
                 }
         }
@@ -248,7 +249,7 @@ tcp_print(netdissect_options *ndo,
         }
 
         flags = tcp_get_flags(tp);
-        ND_PRINT("Flags [%s]", bittok2str_nosep(tcp_flag_values, "none", flags));
+        ND_PRINT("<flags>[%s]</flags>", bittok2str_nosep(tcp_flag_values, "none", flags));
 
         if (!ndo->ndo_Sflag && (flags & TH_ACK)) {
                 /*
@@ -379,7 +380,7 @@ tcp_print(netdissect_options *ndo,
                 thseq = thack = rev = 0;
         }
         if (hlen > length) {
-                ND_PRINT(" [bad hdr length %u - too long, > %u]",
+                ND_PRINT("<error>[bad hdr length %u - too long, > %u]</error>",
                          hlen, length);
                 goto invalid;
         }
@@ -393,51 +394,54 @@ tcp_print(netdissect_options *ndo,
                                 sum = tcp_cksum(ndo, ip, tp, length);
                                 tcp_sum = GET_BE_U_2(tp->th_sum);
 
-                                ND_PRINT(", cksum 0x%04x", tcp_sum);
+                                ND_PRINT(" <cksum>0x%04x</cksum> <cksum_eval>", tcp_sum);
                                 if (sum != 0)
                                         ND_PRINT(" (incorrect -> 0x%04x)",
                                             in_cksum_shouldbe(tcp_sum, sum));
                                 else
                                         ND_PRINT(" (correct)");
+                                ND_PRINT("</cksum_eval>");
                         }
                 } else if (IP_V(ip) == 6) {
                         if (ND_TTEST_LEN(tp->th_sport, length)) {
                                 sum = tcp6_cksum(ndo, ip6, tp, length);
                                 tcp_sum = GET_BE_U_2(tp->th_sum);
 
-                                ND_PRINT(", cksum 0x%04x", tcp_sum);
+                                ND_PRINT(" <cksum>0x%04x</cksum> <cksum_eval>", tcp_sum);
                                 if (sum != 0)
                                         ND_PRINT(" (incorrect -> 0x%04x)",
                                             in_cksum_shouldbe(tcp_sum, sum));
                                 else
                                         ND_PRINT(" (correct)");
-
+                                ND_PRINT("</cksum_eval>");
                         }
                 }
         }
 
         length -= hlen;
         if (ndo->ndo_vflag > 1 || length > 0 || flags & (TH_SYN | TH_FIN | TH_RST)) {
-                ND_PRINT(", seq %u", seq);
+                ND_PRINT(" <seq>%u", seq);
 
                 if (length > 0) {
-                        ND_PRINT(":%u", seq + length);
+                        ND_PRINT(":%u</seq>", seq + length);
+                } else {
+                        ND_PRINT("</seq>");
                 }
         }
 
         if (flags & TH_ACK)
-                ND_PRINT(", ack %u", ack);
+                ND_PRINT("<ack>%u", ack);
         else
                 if (ndo->ndo_vflag > 1 && ack != 0)
                         ND_PRINT(", [ack %u != 0 while ACK flag not set]", ack);
 
-        ND_PRINT(", win %u", win);
+        ND_PRINT("</ack> <win>%u</win>", win);
 
         if (flags & TH_URG)
-                ND_PRINT(", urg %u", urp);
+                ND_PRINT(" <urg>%u</urg>", urp);
         else
                 if (ndo->ndo_vflag > 1 && urp != 0)
-                        ND_PRINT(", [urg %u != 0 while URG flag not set]", urp);
+                        ND_PRINT(", <urg> [%u != 0 while URG flag not set]</urg>", urp);
         /*
          * Handle any options.
          */
@@ -448,7 +452,7 @@ tcp_print(netdissect_options *ndo,
 
                 hlen -= sizeof(*tp);
                 cp = (const u_char *)tp + sizeof(*tp);
-                ND_PRINT(", options [");
+                ND_PRINT(" <options> [");
                 while (hlen != 0) {
                         if (ch != '\0')
                                 ND_PRINT("%c", ch);
@@ -704,16 +708,18 @@ tcp_print(netdissect_options *ndo,
                         if (opt == TCPOPT_EOL)
                                 break;
                 }
-                ND_PRINT("]");
+                ND_PRINT("]</options>");
         }
 
         /*
          * Print length field before crawling down the stack.
          */
-        ND_PRINT(", length %u", length);
+        ND_PRINT(" <length>%u<length>", length);
 
-        if (length == 0)
+        if (length == 0) {
+                ND_PRINT("\n</TCP_INFO>\n");
                 return;
+        }
 
         /*
          * Decode payload if necessary.
@@ -734,6 +740,7 @@ tcp_print(netdissect_options *ndo,
                         print_tcp_rst_data(ndo, bp, length);
                 else
                         ND_TCHECK_LEN(bp, length);
+                ND_PRINT("\n</TCP_INFO>\n");
                 return;
         }
 
@@ -750,6 +757,7 @@ tcp_print(netdissect_options *ndo,
                         domain_print(ndo, bp, length, TRUE, FALSE);
                         break;
                 }
+                ND_PRINT("\n</TCP_INFO>\n");
                 return;
         }
 
@@ -827,17 +835,19 @@ tcp_print(netdissect_options *ndo,
                                 ND_PRINT(": NFS request xid %u ",
                                          GET_BE_U_4(rp->rm_xid));
                                 nfsreq_noaddr_print(ndo, (const u_char *)rp, fraglen, (const u_char *)ip);
+                                ND_PRINT("\n</TCP_INFO>\n");
                                 return;
                         }
                         if (sport == NFS_PORT && direction == SUNRPC_REPLY) {
                                 ND_PRINT(": NFS reply xid %u ",
                                          GET_BE_U_4(rp->rm_xid));
                                 nfsreply_noaddr_print(ndo, (const u_char *)rp, fraglen, (const u_char *)ip);
+                                ND_PRINT("\n</TCP_INFO>\n");
                                 return;
                         }
                 }
         }
-
+        ND_PRINT("\n</TCP_INFO>\n");
         return;
 bad:
         ND_PRINT("[bad opt]");
