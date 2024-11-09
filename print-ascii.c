@@ -188,14 +188,17 @@ hex_print_with_offset(netdissect_options *ndo,
 	i = 0;
 	while (nshorts != 0) {
 		if ((i++ % 8) == 0) {
-			ND_PRINT("%s0x%04x: ", indent, offset);
+			ND_PRINT("%s<ROW><ADDRESS>0x%04x</ADDRESS> <HEX>", indent, offset);
 			offset += HEXDUMP_BYTES_PER_LINE;
 		}
 		s = GET_U_1(cp);
 		cp++;
-		ND_PRINT(" %02x%02x", s, GET_U_1(cp));
+		ND_PRINT("%02x%02x ", s, GET_U_1(cp));
 		cp++;
 		nshorts--;
+		if ((i % 8) == 0) {
+			ND_PRINT("</HEX></ROW>");
+		}
 	}
 	if (length & 1) {
 		if ((i % 8) == 0)
@@ -204,6 +207,7 @@ hex_print_with_offset(netdissect_options *ndo,
 	}
 	if (truncated)
 		nd_trunc_longjmp(ndo);
+	ND_PRINT("</HEX></ROW>");
 }
 
 void

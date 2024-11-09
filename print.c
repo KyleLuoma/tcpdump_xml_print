@@ -460,6 +460,7 @@ pretty_print_packet(netdissect_options *ndo, const struct pcap_pkthdr *h,
 		/*
 		 * Print the raw packet data in hex.
 		 */
+		ND_PRINT("\n<TCPDUMP_HEX>");
 		if (ndo->ndo_xflag > 1) {
 			/*
 			 * Include the link-layer header.
@@ -472,17 +473,20 @@ pretty_print_packet(netdissect_options *ndo, const struct pcap_pkthdr *h,
 			 * print nothing.
 			 */
 			if (h->caplen > hdrlen)
-				hex_print(ndo, "\n\t", sp + hdrlen,
+				hex_print(ndo, "\"\n\t", sp + hdrlen,
 					  h->caplen - hdrlen);
 		}
+		ND_PRINT("\n</TCPDUMP_HEX>\n");
 	} else if (ndo->ndo_Aflag) {
 		/*
 		 * Print the raw packet data in ASCII.
 		 */
+		ND_PRINT("\n<TCP_DUMP_ASCII>");
 		if (ndo->ndo_Aflag > 1) {
 			/*
 			 * Include the link-layer header.
 			 */
+			
 			ascii_print(ndo, sp, h->caplen);
 		} else {
 			/*
@@ -493,6 +497,7 @@ pretty_print_packet(netdissect_options *ndo, const struct pcap_pkthdr *h,
 			if (h->caplen > hdrlen)
 				ascii_print(ndo, sp + hdrlen, h->caplen - hdrlen);
 		}
+		ND_PRINT("\n</TCP_DUMP_ASCII>\n");
 	}
 
 	ND_PRINT("\n");
