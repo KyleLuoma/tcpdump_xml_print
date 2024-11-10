@@ -193,7 +193,11 @@ hex_print_with_offset(netdissect_options *ndo,
 		}
 		s = GET_U_1(cp);
 		cp++;
-		ND_PRINT("%02x%02x ", s, GET_U_1(cp));
+		if (ndo->ndo_print_8bit_hex) {
+			ND_PRINT("%02x %02x ", s, GET_U_1(cp));
+		} else {
+			ND_PRINT("%02x%02x ", s, GET_U_1(cp));
+		}
 		cp++;
 		nshorts--;
 		if ((i % 8) == 0) {

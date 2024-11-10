@@ -644,6 +644,7 @@ show_remote_devices_and_exit(void)
 #define OPTION_LENGTHS			138
 #define OPTION_TIME_T_SIZE		139
 #define OPTION_SKIP			140
+#define OPTION_PRINT_8_BIT_HEX         141
 
 static const struct option longopts[] = {
 	{ "buffer-size", required_argument, NULL, 'B' },
@@ -688,6 +689,7 @@ static const struct option longopts[] = {
 	{ "time-t-size", no_argument, NULL, OPTION_TIME_T_SIZE },
 	{ "skip", required_argument, NULL, OPTION_SKIP },
 	{ "version", no_argument, NULL, OPTION_VERSION },
+	{ "hex-print-bytes", no_argument, NULL, OPTION_PRINT_8_BIT_HEX},
 	{ NULL, 0, NULL, 0 }
 };
 
@@ -1613,6 +1615,8 @@ main(int argc, char **argv)
 	else
 		ndo->program_name = program_name = argv[0];
 
+	ndo->ndo_print_8bit_hex = 0;
+
 #if defined(HAVE_PCAP_WSOCKINIT)
 	if (pcap_wsockinit() != 0)
 		error("Attempting to initialize Winsock failed");
@@ -1627,6 +1631,7 @@ main(int argc, char **argv)
 	 * but in some cases (sandboxing, chroot) this may be too late.
 	 */
 	tzset();
+
 
 	while (
 	    (op = getopt_long(argc, argv, SHORTOPTS, longopts, NULL)) != -1)
@@ -2024,6 +2029,10 @@ main(int argc, char **argv)
 
 		case OPTION_LENGTHS:
 			ndo->ndo_lengths = 1;
+			break;
+
+		case OPTION_PRINT_8_BIT_HEX:
+			ndo->ndo_print_8bit_hex = 1;
 			break;
 
 		case OPTION_TIME_T_SIZE:

@@ -279,6 +279,7 @@ struct netdissect_options {
   void (*ndo_warning)(netdissect_options *,
 		      const char *fmt, ...)
 		      PRINTFLIKE_FUNCPTR(2, 3);
+  int ndo_print_8bit_hex; /* Print hex output as 8 bit (2 char) words instead of 16 (4 char) */
 };
 
 extern WARN_UNUSED_RESULT int nd_push_buffer(netdissect_options *, u_char *, const u_char *, const u_int);
