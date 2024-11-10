@@ -351,6 +351,9 @@ udp_print(netdissect_options *ndo, const u_char *bp, u_int length,
 	const struct ip6_hdr *ip6;
 
 	ndo->ndo_protocol = "udp";
+
+	ND_PRINT("\n<UDP_INFO>\n");
+
 	up = (const struct udphdr *)bp;
 	ip = (const struct ip *)bp2;
 	if (IP_V(ip) == 6)
@@ -465,6 +468,7 @@ udp_print(netdissect_options *ndo, const u_char *bp, u_int length,
 			quic_print(ndo, cp);
 			break;
 		}
+		ND_PRINT("\n</UDP_INFO>\n");
 		return;
 	}
 
@@ -480,6 +484,7 @@ udp_print(netdissect_options *ndo, const u_char *bp, u_int length,
 					 GET_BE_U_4(rp->rm_xid));
 				nfsreq_noaddr_print(ndo, (const u_char *)rp, length,
 				    (const u_char *)ip);
+				ND_PRINT("\n</UDP_INFO>\n");
 				return;
 			}
 			if (sport == NFS_PORT && direction == SUNRPC_REPLY) {
@@ -487,11 +492,13 @@ udp_print(netdissect_options *ndo, const u_char *bp, u_int length,
 					 GET_BE_U_4(rp->rm_xid));
 				nfsreply_noaddr_print(ndo, (const u_char *)rp, length,
 				    (const u_char *)ip);
+				ND_PRINT("\n</UDP_INFO>\n");
 				return;
 			}
 #ifdef notdef
 			if (dport == SUNRPC_PORT && direction == SUNRPC_CALL) {
 				sunrpc_print((const u_char *)rp, length, (const u_char *)ip);
+				ND_PRINT("\n</UDP_INFO>\n");
 				return;
 			}
 #endif
@@ -689,6 +696,7 @@ udp_print(netdissect_options *ndo, const u_char *bp, u_int length,
 		else
 			ND_PRINT("UDP, length %u", ulen);
 	}
+	ND_PRINT("\n</UDP_INFO>\n");
 	return;
 
 invalid:

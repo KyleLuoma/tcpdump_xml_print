@@ -239,6 +239,8 @@ ip6_print(netdissect_options *ndo, const u_char *bp, u_int length)
 	ndo->ndo_protocol = "ip6";
 	ip6 = (const struct ip6_hdr *)bp;
 
+	ND_PRINT("\n<IP6_INFO>\n");
+
 	if (!ndo->ndo_eflag) {
 		nd_print_protocol_caps(ndo);
 		ND_PRINT(" ");
@@ -339,21 +341,25 @@ ip6_print(netdissect_options *ndo, const u_char *bp, u_int length)
 			if (found_hbh == 1) {
 				ND_PRINT("[The Hop-by-Hop Options header was already found]");
 				nd_print_invalid(ndo);
+				ND_PRINT("\n</IP6_INFO>\n");
 				return;
 			}
 			if (ph != 255) {
 				ND_PRINT("[The Hop-by-Hop Options header don't follow the IPv6 header]");
 				nd_print_invalid(ndo);
+				ND_PRINT("\n</IP6_INFO>\n");
 				return;
 			}
 			advance = hbhopt_process(ndo, cp, &found_jumbo, &payload_len);
 			if (payload_len == 0 && found_jumbo == 0) {
 				ND_PRINT("[No valid Jumbo Payload Hop-by-Hop option found]");
 				nd_print_invalid(ndo);
+				ND_PRINT("\n</IP6_INFO>\n");
 				return;
 			}
 			if (advance < 0) {
 				nd_pop_packet_info(ndo);
+				ND_PRINT("\n</IP6_INFO>\n");
 				return;
 			}
 			found_extension_header = 1;
@@ -365,6 +371,7 @@ ip6_print(netdissect_options *ndo, const u_char *bp, u_int length)
 			advance = dstopt_process(ndo, cp);
 			if (advance < 0) {
 				nd_pop_packet_info(ndo);
+				ND_PRINT("\n</IP6_INFO>\n");
 				return;
 			}
 			found_extension_header = 1;
@@ -375,6 +382,7 @@ ip6_print(netdissect_options *ndo, const u_char *bp, u_int length)
 			advance = frag6_print(ndo, cp, (const u_char *)ip6);
 			if (advance < 0 || ndo->ndo_snapend <= cp + advance) {
 				nd_pop_packet_info(ndo);
+				ND_PRINT("\n</IP6_INFO>\n");
 				return;
 			}
 			found_extension_header = 1;
@@ -395,11 +403,13 @@ ip6_print(netdissect_options *ndo, const u_char *bp, u_int length)
 			advance = mobility_print(ndo, cp, (const u_char *)ip6);
 			if (advance < 0) {
 				nd_pop_packet_info(ndo);
+				ND_PRINT("\n</IP6_INFO>\n");
 				return;
 			}
 			found_extension_header = 1;
 			nh = GET_U_1(cp);
 			nd_pop_packet_info(ndo);
+			ND_PRINT("\n</IP6_INFO>\n");
 			return;
 
 		case IPPROTO_ROUTING:
@@ -407,6 +417,7 @@ ip6_print(netdissect_options *ndo, const u_char *bp, u_int length)
 			advance = rt6_print(ndo, cp, (const u_char *)ip6);
 			if (advance < 0) {
 				nd_pop_packet_info(ndo);
+				ND_PRINT("\n</IP6_INFO>\n");
 				return;
 			}
 			found_extension_header = 1;
@@ -486,6 +497,7 @@ ip6_print(netdissect_options *ndo, const u_char *bp, u_int length)
 			ip_demux_print(ndo, cp, len, 6, fragmented,
 				       GET_U_1(ip6->ip6_hlim), nh, bp);
 			nd_pop_packet_info(ndo);
+			ND_PRINT("\n</IP6_INFO>\n");
 			return;
 		}
 		ph = nh;
@@ -495,9 +507,11 @@ ip6_print(netdissect_options *ndo, const u_char *bp, u_int length)
 	}
 
 	nd_pop_packet_info(ndo);
+	ND_PRINT("\n</IP6_INFO>\n");
 	return;
 trunc:
 	nd_print_trunc(ndo);
+	ND_PRINT("\n</IP6_INFO>\n");
 	return;
 
 invalid:
