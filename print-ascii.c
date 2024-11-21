@@ -206,7 +206,7 @@ hex_print_with_offset(netdissect_options *ndo,
 	}
 	if (length & 1) {
 		if ((i % 8) == 0)
-			ND_PRINT("%s0x%04x: ", indent, offset);
+			ND_PRINT("%s<ROW><ADDRESS>0x%04x</ADDRESS> <HEX>", indent, offset);
 		ND_PRINT(" %02x", GET_U_1(cp));
 	}
 	if (truncated)
