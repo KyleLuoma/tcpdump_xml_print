@@ -430,12 +430,12 @@ tcp_print(netdissect_options *ndo,
         }
 
         if (flags & TH_ACK)
-                ND_PRINT("<ack>%u", ack);
+                ND_PRINT("<ack>%u</ack>", ack);
         else
                 if (ndo->ndo_vflag > 1 && ack != 0)
-                        ND_PRINT(", [ack %u != 0 while ACK flag not set]", ack);
+                        ND_PRINT("<ack>%u</ack> <ack_error>%u != 0 while ACK flag not set</ack_error>", ack, ack);
 
-        ND_PRINT("</ack> <win>%u</win>", win);
+        ND_PRINT("<win>%u</win>", win);
 
         if (flags & TH_URG)
                 ND_PRINT(" <urg>%u</urg>", urp);

@@ -91,6 +91,10 @@ ascii_print(netdissect_options *ndo,
 			if (!ND_ASCII_ISGRAPH(s) &&
 			    (s != '\t' && s != ' ' && s != '\n'))
 				ND_PRINT(".");
+			else if (s == '<')
+				ND_PRINT("&lt;");
+			else if (s == '&')
+				ND_PRINT("&amp;");
 			else
 				ND_PRINT("%c", s);
 		}

@@ -8,6 +8,7 @@
 *.gcda
 *.gcno
 *.gcov
+*.xml
 /libnetdissect.a
 /config.h
 /config.h.in
@@ -44,3 +45,4 @@ netdissect.dir/
 tcpdump.dir/
 tcpdump.sln
 .vs/
+notes.txt

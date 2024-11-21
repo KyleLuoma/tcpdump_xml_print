@@ -335,6 +335,7 @@ void pcap_set_optimizer_debug(int);
 static void NORETURN
 exit_tcpdump(const int status)
 {
+	printf("\n</TCPDUMP_CAPTURE_SESSION>\n");
 	nd_cleanup();
 	exit(status);
 }
@@ -2670,6 +2671,7 @@ DIAG_ON_ASSIGN_ENUM
 		 * to a file from the -V file).  Print a message to
 		 * the standard error on UN*X.
 		 */
+		printf("\n<TCPDUMP_CAPTURE_SESSION>\n");
 		if (!ndo->ndo_vflag && !WFileName) {
 			(void)fprintf(stderr,
 			    "%s: verbose output suppressed, use -v[v]... for full protocol decode\n",
@@ -2821,7 +2823,6 @@ DIAG_ON_ASSIGN_ENUM
 		}
 	}
 	while (ret != NULL);
-
 	if (count_mode && RFileName != NULL)
 		fprintf(stdout, "%u packet%s\n", packets_captured,
 			PLURAL_SUFFIX(packets_captured));
@@ -2910,6 +2911,7 @@ child_cleanup(int signo _U_)
 static void
 info(int verbose)
 {
+	printf("<CAPTURE_SESSION_RESULTS>\n");
 	struct pcap_stat stats;
 
 	/*
@@ -2918,7 +2920,7 @@ info(int verbose)
 	 */
 	stats.ps_ifdrop = 0;
 	if (pcap_stats(pd, &stats) < 0) {
-		(void)fprintf(stderr, "pcap_stats: %s\n", pcap_geterr(pd));
+		(void)fprintf(stderr, "<pcap_stats>%s</pcap_stats>\n", pcap_geterr(pd));
 		infoprint = 0;
 		return;
 	}
@@ -2926,30 +2928,28 @@ info(int verbose)
 	if (!verbose)
 		fprintf(stderr, "%s: ", program_name);
 
-	(void)fprintf(stderr, "%u packet%s captured", packets_captured,
-	    PLURAL_SUFFIX(packets_captured));
+	(void)fprintf(stderr, "<packets_captured>%u</packets_captured>", packets_captured);
 	if (!verbose)
 		fputs(", ", stderr);
 	else
 		putc('\n', stderr);
-	(void)fprintf(stderr, "%u packet%s received by filter", stats.ps_recv,
-	    PLURAL_SUFFIX(stats.ps_recv));
+	(void)fprintf(stderr, "<packets_received_by_filter>%u</packets_received_by_filter>", stats.ps_recv);
 	if (!verbose)
 		fputs(", ", stderr);
 	else
 		putc('\n', stderr);
-	(void)fprintf(stderr, "%u packet%s dropped by kernel", stats.ps_drop,
-	    PLURAL_SUFFIX(stats.ps_drop));
+	(void)fprintf(stderr, "<packets_dropped_by_kernel>%u</packets_dropped_by_kernel>", stats.ps_drop);
 	if (stats.ps_ifdrop != 0) {
 		if (!verbose)
 			fputs(", ", stderr);
 		else
 			putc('\n', stderr);
-		(void)fprintf(stderr, "%u packet%s dropped by interface\n",
-		    stats.ps_ifdrop, PLURAL_SUFFIX(stats.ps_ifdrop));
+		(void)fprintf(stderr, "<packets_dropped_by_interface>%u</packets_dropped_by_interface>\n",
+		    stats.ps_ifdrop);
 	} else
 		putc('\n', stderr);
 	infoprint = 0;
+	printf("</CAPTURE_SESSION_RESULTS>");
 }
 
 #if defined(HAVE_FORK) || defined(HAVE_VFORK)
