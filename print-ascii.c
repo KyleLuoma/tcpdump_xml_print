@@ -202,11 +202,11 @@ hex_print_with_offset(netdissect_options *ndo,
 		} else {
 			ND_PRINT("%02x%02x ", s, GET_U_1(cp));
 		}
-		cp++;
-		nshorts--;
 		if (nshorts > 0 && (i % 8) == 0) {
 			ND_PRINT("</HEX></ROW>");
 		}
+		cp++;
+		nshorts--;
 	}
 	if (length & 1) {
 		if ((i % 8) == 0)
