@@ -200,7 +200,7 @@ hex_print_with_offset(netdissect_options *ndo,
 		}
 		cp++;
 		nshorts--;
-		if ((i % 8) == 0) {
+		if (nshorts > 0 && (i % 8) == 0) {
 			ND_PRINT("</HEX></ROW>");
 		}
 	}
