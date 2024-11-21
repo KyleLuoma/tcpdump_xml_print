@@ -714,7 +714,7 @@ tcp_print(netdissect_options *ndo,
         /*
          * Print length field before crawling down the stack.
          */
-        ND_PRINT(" <length>%u<length>", length);
+        ND_PRINT(" <length>%u</length>", length);
 
         if (length == 0) {
                 ND_PRINT("\n</TCP_INFO>\n");
