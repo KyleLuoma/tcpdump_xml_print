@@ -471,17 +471,26 @@ pretty_print_packet(netdissect_options *ndo, const struct pcap_pkthdr *h,
 		if (ndo->ndo_xflag > 1 || ndo->ndo_Xflag > 1) {
 			/*
 			 * Include the link-layer header.
+			 * hex_print(ndo, "\n\t", sp, h->caplen);
 			 */
-			hex_print(ndo, "\n\t", sp, h->caplen);
+			ND_PRINT("\n  <LINK_LAYER_HEADER>");
+			hex_print(ndo, "\n\t", sp, hdrlen);
+			ND_PRINT("\n  </LINK_LAYER_HEADER>");
+			ND_PRINT("\n  <PAYLOAD_DATA>");
+			hex_print(ndo, "\n\t", sp + hdrlen,
+					  h->caplen - hdrlen);
+			ND_PRINT("\n  </PAYLOAD_DATA>");
 		} else {
 			/*
 			 * Don't include the link-layer header - and if
 			 * we have nothing past the link-layer header,
 			 * print nothing.
 			 */
+			ND_PRINT("\n  <PAYLOAD_DATA>");
 			if (h->caplen > hdrlen)
 				hex_print(ndo, "\"\n\t", sp + hdrlen,
 					  h->caplen - hdrlen);
+			ND_PRINT("\n  </PAYLOAD_DATA>");
 		}
 		ND_PRINT("\n</TCPDUMP_HEX>\n");
 	} 
@@ -494,8 +503,12 @@ pretty_print_packet(netdissect_options *ndo, const struct pcap_pkthdr *h,
 			/*
 			 * Include the link-layer header.
 			 */
-			
-			ascii_print(ndo, sp, h->caplen);
+			ND_PRINT("\n  <LINK_LAYER_HEADER>");
+			ascii_print(ndo, sp, hdrlen);
+			ND_PRINT("\n  </LINK_LAYER_HEADER>");
+			ND_PRINT("\n  <PAYLOAD_DATA>");
+			ascii_print(ndo, sp + hdrlen, h->caplen - hdrlen);
+			ND_PRINT("\n  </PAYLOAD_DATA>");
 		} else {
 			/*
 			 * Don't include the link-layer header - and if
@@ -503,7 +516,9 @@ pretty_print_packet(netdissect_options *ndo, const struct pcap_pkthdr *h,
 			 * print nothing.
 			 */
 			if (h->caplen > hdrlen)
+				ND_PRINT("\n  <PAYLOAD_DATA>");
 				ascii_print(ndo, sp + hdrlen, h->caplen - hdrlen);
+				ND_PRINT("\n  </PAYLOAD_DATA>");
 		}
 		ND_PRINT("\n</TCP_DUMP_ASCII>\n");
 	}
